@@ -2,16 +2,14 @@ package main
 
 import (
 	"flag"
-	"github.com/google/gops/agent"
 	"log"
 	"net/http"
 
-	"github.com/prometheus/client_golang/prometheus/promhttp"
-
 	"github.com/tokopedia/gosample/hello"
-	"github.com/tokopedia/logging/tracer"
-	"gopkg.in/tokopedia/grace.v1"
-	"gopkg.in/tokopedia/logging.v1"
+	_ "github.com/satori/go.uuid"
+	grace "gopkg.in/tokopedia/grace.v1"
+	logging "gopkg.in/tokopedia/logging.v1"
+	uuid2 "github.com/satori/go.uuid"
 )
 
 func main() {
@@ -21,20 +19,17 @@ func main() {
 
 	debug := logging.Debug.Println
 
-	debug("app started") // message will not appear unless run with -debug switch
+	debug("app started")
 
-	if err := agent.Listen(&agent.Options{}); err != nil {
-		log.Fatal(err)
-	}
-
+	uuid,_ := uuid2.NewV1()
+	uuidString := uuid.String()
 	hwm := hello.NewHelloWorldModule()
-
-	http.Handle("/metrics", promhttp.Handler())
-
-	http.HandleFunc("/hello", hwm.SayHelloWorld)
+	hwm.SendMessage("Ismail Zakky", "Welcome Aboard ("+uuidString+")")
+	http.HandleFunc("/select", hwm.GetMultiDataFromDatabase)
+	http.HandleFunc("/change", hwm.ChangeWelcomeMessage)
+	http.HandleFunc("/search", hwm.SearchDataFromDatabase)
+	http.HandleFunc("/getTitle", hwm.GetTitle)
 	go logging.StatsLog()
-
-	tracer.Init(&tracer.Config{Port: 8700, Enabled: true})
 
 	log.Fatal(grace.Serve(":9000", nil))
 }

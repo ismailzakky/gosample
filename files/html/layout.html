@@ -1,0 +1,143 @@
+<html>
+    <head>
+        <title> {{.PageTitle}} </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <style>
+            table {
+                border-collapse: separate;
+                border-spacing: 50px 0;
+                border-spacing:5px;
+            }
+
+        </style>
+    </head>
+    <body style="width:100%" id="userTable">
+        <div style="">
+            <h3 style="text-align:center" id="welcomeMessage" >{{.WelcomeMessage}} </h3>
+        </div>
+        <div>
+            <table >
+                <thead>
+                    <tr>
+                        <th>id</th>
+                        <th>Name</th>
+                        <th>MSISDN</th>
+                        <th>Email</th>
+                        <th>Birth Date</th>
+                        <th>Created Time</th>
+                        <th>Update Time</th>
+                        <th>User Age</th>
+                    </tr>
+                </thead>
+                <tbody class="userTable">
+                    {{range .Users}}
+                        <tr>
+                            <td>{{.ID}}</td>
+
+                            {{if .UserName.Valid}}
+                            <td>{{.UserName.String}}</td>
+                            {{else}}
+                            <td>{{"-"}}</td>
+                            {{end}}
+                            
+                            {{if .Msisdn.Valid}}
+                            <td>{{.Msisdn.String}}</td>
+                            {{else}}
+                            <td>{{"-"}}</td>
+                            {{end}}
+                            
+                            <td>{{.Email}}</td>
+
+                            {{if .BirthDate.Valid}}
+                            <td>{{.BirthDate.String}}</td>
+                            {{else}}
+                            <td>{{"-"}}</td>
+                            {{end}}
+
+                            {{if .CreateTime.Valid}}
+                            <td>{{.CreateTime.String}}</td>
+                            {{else}}
+                            <td>{{"-"}}</td>
+                            {{end}}
+                            
+                            {{if .UpdateTime.Valid}}
+                            <td>{{.UpdateTime.String}}</td>
+                            {{else}}
+                            <td>{{"-"}}</td>
+                            {{end}}
+
+                            {{if .Age.Valid}}
+                            <td>{{.Age.Int64}}</td>
+                            {{else}}
+                            <td>{{"-"}}</td>
+                            {{end}}
+
+                            
+                        </tr>
+                    {{end}}
+                </tbody>
+            </table>
+        </div>
+        <div>
+            <input type="text" id="name" />
+        </div>
+        <div>
+            Visitor count : {{.WebVisitorCount}}
+    </body>
+    <script>
+        function NullAbleConverter(object,type){
+            if (object.Valid) {
+                if(type == "string"){
+                    if (object.String.length == 0){
+                        return "-"
+                    } else {
+                        return object.String;
+                    }
+                } else {
+                    return object.Int64;
+                }
+            } else {
+                console.log("Masuk 2")
+                return "-";
+            } 
+        }
+
+        setInterval(function() {
+            url = "http://127.0.0.1:9000/getTitle"
+            $.get(url,function(data){
+                    if (data.length > 0 ) {
+                        $("#welcomeMessage").html(data)
+                    }
+            });
+        },1000)
+
+
+        $(document).on("change","#name",function(){
+            url = "http://127.0.0.1:9000/search?name="+$("#name").val()
+            console.log(url)
+            $.get( url, function( data ) {
+                json = JSON.parse(data);
+                $( ".userTable" ).html( "" );
+                rows = "";
+                for(var i = 0; i < json.length; i++) {
+                    var obj = json[i];
+                    rows += `<tr>
+                        <td>`+obj['ID']+`</td>
+                        <td>`+NullAbleConverter(obj['UserName'],"string")+`</td>
+                        <td>`+NullAbleConverter(obj['Msisdn'],"string")+`</td>
+                        <td>`+obj['Email']+`</td>
+                        <td>`+NullAbleConverter(obj['BirthDate'],"string")+`</td>
+                        <td>`+NullAbleConverter(obj['CreateTime'],"string")+`</td>
+                        <td>`+NullAbleConverter(obj['UpdateTime'],"string")+`</td>
+                        <td>`+NullAbleConverter(obj['Age'],"integer")+`</td>
+                    </tr>
+                    `;
+                    
+                }
+                $('.userTable').html(rows);
+            });
+        });
+
+        
+    </script>
+</html>
