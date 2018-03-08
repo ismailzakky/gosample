@@ -8,12 +8,30 @@ import (
 	logging "gopkg.in/tokopedia/logging.v1"
 )
 
+
 type ServerConfig struct {
 	Name string
 }
+type DatabaseConfig struct {
+	Type       string
+	Connection string
+}
 
 type Config struct {
-	Server ServerConfig
+	Server   ServerConfig
+	Database DatabaseConfig
+	NSQ      NSQConfig
+	Redis    RedisConfig
+}
+
+type RedisConfig struct {
+	Protocol string
+	Host     string
+}
+
+type NSQConfig struct {
+	NSQD     string
+	Lookupds string
 }
 
 type NSQModule struct {
@@ -36,9 +54,9 @@ func NewNSQModule() *NSQModule {
 
 	// contohnya: caranya ciptakan nsq consumer
 	nsqCfg := nsq.NewConfig()
-	q := createNewConsumer(nsqCfg, "random-topic", "test", handler)
+	q := createNewConsumer(nsqCfg, "random-topic-2", "test", handler)
 	q.SetLogger(log.New(os.Stderr, "nsq:", log.Ltime), nsq.LogLevelError)
-	q.ConnectToNSQLookupd("nsqlookupd.local:4161")
+	q.ConnectToNSQLookupd("devel-go.tkpd:4161")
 
 	return &NSQModule{
 		cfg: &cfg,
